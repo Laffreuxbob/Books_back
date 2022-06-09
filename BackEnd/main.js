@@ -34,7 +34,7 @@ server.get('/book', (req, res) => {
                 return res.send([]) // return empty array
             }
             res.status(200)
-            console.log(books)
+            //console.log(books)
             res.send(books || [])
         })
         .catch(err => console.log('An error occurred getting mongo todo list', err))
@@ -82,14 +82,14 @@ server.get('/book/:author', (req, res) => {
 server.delete('/book', (req, res) => {
     console.log("DELETE")
 
-    const test_id = req.body;
-    mongo.db.collection('book').findOne({ _id: mongo.ObjectId(test_id.id_to_delete) })
-        .then( book => {
-                console.log('------------------')
-                console.log(book);
-                console.log('------------------')
-            }
-        )
+    // const test_id = req.body;
+    // mongo.db.collection('book').findOne({ _id: mongo.ObjectId(test_id.id_to_delete) })
+    //     .then( book => {
+    //             console.log('------------------')
+    //             console.log(book);
+    //             console.log('------------------')
+    //         }
+    //     )
 
 
     const item_to_delete = (req.body.id_to_delete);
@@ -108,7 +108,7 @@ server.delete('/book', (req, res) => {
             mongo.db.collection('book').deleteOne(itemToDelete);
             console.log('Todo successfully deleted from mongo database.');
             res.status(200);
-            return res.end();
+            return res.send('ok');
         })
 });
 
@@ -117,33 +117,37 @@ server.delete('/book', (req, res) => {
 // curl -X PUT -H "Content-Type: application/json" -d '{"name":"editedName","date":"editedDate"}' "http://localhost:8080/todos/2"
 // curl -X PUT -H "Content-Type: application/json" -d '{"done":"true"}' "http://localhost:8080/todos/1"
 
-server.put('/book/:id', (req, res) => {
-    let idTodoToEdit = mongo.ObjectId(req.params.id);
-    return mongo.db.collection('todos').findOne({_id: idTodoToEdit})
+server.put('/book', (req, res) => {
+    console.log("PUT")
+    let item_to_edit = req.body
+    console.log('TO EDIT')
+    console.log(item_to_edit)
+    console.log('TO EDIT')
+    return mongo.db.collection('book').findOne({_id: mongo.ObjectId(item_to_edit.id_to_update)})
         .then(result => {
             if (!result) {
                 console.log("Warning, task to edit not found !");
                 res.status(403).end();
                 return result;
             }
-            let datas = req.body;
-            /* attribution des nouvelles key_value editees */
-            let editedName = datas.name || result.name;
-            let editedDate = datas.date || result.date;
-            let editedDescription = datas.description || result.description;
-            let editedDone = (datas.done || datas.done === false) ? datas.done : result.done;
-
-            console.log(editedName, editedDone)
+            // let datas = req.body;
+            // /* attribution des nouvelles key_value editees */
+            // let editedName = datas.name || result.name;
+            // let editedDate = datas.date || result.date;
+            // let editedDescription = datas.description || result.description;
+            // let editedDone = (datas.done || datas.done === false) ? datas.done : result.done;
+            //
+            // console.log(editedName, editedDone)
 
             return mongo.db.collection('book').updateOne(
 
-                {_id: idTodoToEdit},
+                {_id: mongo.ObjectId(item_to_edit.id_to_update)},
                 {
-                    $set: {"name": editedName, "date": editedDate, "description": editedDescription, "done": editedDone}
+                    $set: {"title": item_to_edit.updated_title}
                 }
             )
         })
-        .then(() => { return  mongo.db.collection('todos').findOne({_id: idTodoToEdit} ) })
+        .then(() => { return  mongo.db.collection('book').findOne({_id: mongo.ObjectId(item_to_edit.id_to_update)} ) })
         .then( updated => { console.log(" UP :", updated) ; res.send(updated)})
 
         .catch(err => {
@@ -174,7 +178,7 @@ server.post('/book',  (req, res) => {
     //     "priority": newPriority,
     //     "done": false
     // };
-    mongo.db.collection('book').findOne({name: 'newItem.name'})
+    mongo.db.collection('book').findOne({title: 'neelixx'})
         .then(result => {
             if (result) {
                 console.log("Warning,", 'newItem.name', " already exists!");
@@ -189,6 +193,9 @@ server.post('/book',  (req, res) => {
         .catch(err => {
             console.log('An error occured inserting todo in mongo.', err)
         })
+
+    // db.books.insertOne({title: "titre", author: "auteur", summary: "resume", img: "/img/img1.png", date: "07-06-2022", rating: "5", tag: "default"})
+
 });
 
 
